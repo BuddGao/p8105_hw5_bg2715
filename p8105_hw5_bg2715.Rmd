@@ -1,0 +1,60 @@
+---
+title: "Reading data from the web"
+author: "Baode Gao"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(patchwork)
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Problem 2
+
+creat df and tidy it.
+```{r}
+path = 'hw5_data/data/'
+file = list.files(path)
+
+p2_df = 
+  purrr::map(str_c(path,file), read_csv) %>%
+  bind_rows() %>%
+  mutate(file_name = gsub(".csv", "", file)
+         )
+
+tidy_df = p2_df  %>% 
+  separate(file_name, into = c('arm','ID'),sep = '_') %>%
+  mutate(ID = as.integer(ID)) %>%
+  pivot_longer(week_1:week_8, 
+               names_to = "week",
+               values_to = "value",
+               names_prefix = 'week_') %>%
+  mutate(week = as.factor(week)) %>%
+  relocate(ID)
+
+knitr::kable(tidy_df[1:10,])
+```
+
+visualizaiton
+```{r}
+tidy_df %>% 
+  ggplot(aes(x = week, y = value, group = paste0(ID, arm), color = arm)) +
+  geom_line()
+  
+```
+
+With the increase of time, the value of the experimental group showed an obviously upward trend. The control group fluctuated little up and down.
+
+## Problem 3
